@@ -1,0 +1,42 @@
+@import "../variables.scss";
+
+.sidebar {
+    width: 25%;
+    min-width: 320px;
+    max-width: 400px;
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: $border-radius-lg;
+    box-shadow: $box-shadow-md;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+    display: flex;
+    flex-direction: column;
+    transition: background-color $transition-speed, box-shadow $transition-speed;
+    z-index: 5;
+
+    :global(.darkMode) & {
+        background-color: rgba(30, 41, 59, 0.9);
+        box-shadow: $box-shadow-md;
+    }
+
+    @media (max-width: $breakpoint-lg) {
+        width: 35%;
+        min-width: 280px;
+    }
+
+    @media (max-width: $breakpoint-md) {
+        width: 100%;
+        max-width: 100%;
+        flex-direction: row;
+        height: 50vh;
+
+        > * {
+            flex: 1;
+        }
+    }
+
+    @media (max-width: $breakpoint-sm) {
+        flex-direction: column;
+        height: auto;
+    }
+}

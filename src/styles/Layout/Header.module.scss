@@ -1,0 +1,103 @@
+@import "../variables.scss";
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: $spacing-lg $spacing-xl;
+    background-color: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    box-shadow: $box-shadow;
+    z-index: 20;
+    transition: background-color $transition-speed, box-shadow $transition-speed;
+    position: relative;
+    width: 100%;
+
+    :global(.darkMode) & {
+        background-color: rgba(17, 24, 39, 0.9);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    }
+
+    @media (max-width: $breakpoint-lg) {
+        padding: $spacing-md $spacing-lg;
+    }
+
+    @media (max-width: $breakpoint-sm) {
+        padding: $spacing-sm $spacing-md;
+    }
+}
+
+.title {
+    font-size: $font-size-2xl;
+    font-weight: $font-weight-bold;
+    background: linear-gradient(45deg, $primary-color, $secondary-color);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    transition: all $transition-speed;
+    margin: 0;
+
+    :global(.darkMode) & {
+        background: linear-gradient(
+            45deg,
+            lighten($primary-color, 15%),
+            lighten($secondary-color, 15%)
+        );
+        -webkit-background-clip: text;
+        background-clip: text;
+    }
+
+    @media (max-width: $breakpoint-lg) {
+        font-size: $font-size-xl;
+    }
+
+    @media (max-width: $breakpoint-sm) {
+        font-size: $font-size-lg;
+    }
+}
+
+.actions {
+    display: flex;
+    gap: $spacing-sm;
+}
+
+.themeToggle {
+    background: none;
+    border: none;
+    font-size: $font-size-xl;
+    cursor: pointer;
+    padding: $spacing-sm;
+    border-radius: 50%;
+    transition: transform $transition-speed, background-color $transition-speed;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    color: $light-text;
+
+    :global(.darkMode) & {
+        color: $dark-text;
+    }
+
+    &:hover,
+    &:focus {
+        transform: rotate(15deg);
+        background-color: rgba(0, 0, 0, 0.05);
+
+        :global(.darkMode) & {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+    }
+
+    &:focus {
+        outline: 2px solid $primary-color;
+        outline-offset: 2px;
+    }
+
+    @media (max-width: $breakpoint-sm) {
+        font-size: $font-size-lg;
+        width: 36px;
+        height: 36px;
+    }
+}

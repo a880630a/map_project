@@ -1,0 +1,64 @@
+@import "../variables.scss";
+
+.mapContainer {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    min-height: 500px;
+    flex: 1;
+    flex-grow: 1;
+    background-color: var(--color-background);
+    box-shadow: var(--box-shadow-soft);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    transition: box-shadow $transition-speed, background-color $transition-speed;
+
+    :global(.darkMode) & {
+        background-color: rgba(30, 41, 59, 0.9);
+        box-shadow: $box-shadow-md;
+    }
+
+    // 全屏模式下的樣式
+    &.fullscreen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: 1000;
+        border-radius: 0;
+    }
+
+    @media (max-width: $breakpoint-tablet) {
+        min-height: 400px;
+    }
+
+    @media (max-width: $breakpoint-mobile) {
+        min-height: 300px;
+    }
+
+    &:focus-within {
+        box-shadow: $box-shadow-lg;
+        outline: 2px solid $primary-color;
+        outline-offset: 2px;
+    }
+}
+
+// 確保ReactSVGPanZoom正確填充容器
+:global {
+    .react-svg-pan-zoom {
+        width: 100% !important;
+        height: 100% !important;
+        display: block !important;
+
+        .svg-pan-zoom-container {
+            width: 100%;
+            height: 100%;
+        }
+    }
+
+    .react-svg-pan-zoom-zoom-button,
+    .react-svg-pan-zoom-reset-button {
+        display: none !important;
+    }
+}

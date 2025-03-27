@@ -1,0 +1,106 @@
+// 主要顏色
+$primary-color: #3b82f6; // 更飽和的藍色
+$primary-dark: #1d4ed8; // 更深的藍色
+$secondary-color: #10b981; // 更飽和的綠色
+$secondary-dark: #059669; // 更深的綠色
+$accent-color: #f59e0b; // 金黃色
+$accent-dark: #dc2626; // 更深的紅色
+
+// 背景顏色
+$light-bg: #f8fafc; // 稍微偏藍的白色
+$dark-bg: #0f172a; // 更深的深色背景
+$light-bg-alt: #ffffff; // 純白背景
+$dark-bg-alt: #1e293b; // 稍淺的深色背景
+
+// 文字顏色（提高對比度）
+$light-text: #1e293b; // 更深的灰黑色
+$dark-text: #e2e8f0; // 更亮的白色
+$light-text-secondary: #4b5563; // 更深的次要文字
+$dark-text-secondary: #94a3b8; // 更亮的次要文字
+$light-border: #e5e7eb; // 淺色邊框
+$dark-border: #334155; // 深色邊框
+
+// 路徑顏色（更飽和的顏色）
+$path-color-inactive: rgba(100, 100, 100, 0.5);
+$path-color-1: #f43f5e; // 玫紅色
+$path-color-2: #8b5cf6; // 紫色
+$path-color-3: #06b6d4; // 青色
+
+// 間距
+$spacing-xs: 0.25rem;
+$spacing-sm: 0.5rem;
+$spacing-md: 1rem;
+$spacing-lg: 1.5rem;
+$spacing-xl: 2rem;
+$spacing-2xl: 3rem;
+
+// 字體大小
+$font-size-xs: 0.75rem;
+$font-size-sm: 0.875rem;
+$font-size-md: 1rem;
+$font-size-lg: 1.125rem;
+$font-size-xl: 1.25rem;
+$font-size-2xl: 1.5rem;
+$font-size-3xl: 1.875rem;
+$font-size-4xl: 2.25rem;
+
+// 字體粗細
+$font-weight-normal: 400;
+$font-weight-medium: 500;
+$font-weight-semibold: 600;
+$font-weight-bold: 700;
+
+// 邊框和陰影
+$border-radius: 0.375rem;
+$border-radius-lg: 0.5rem;
+$border-radius-sm: 0.25rem;
+$border-radius-xl: 0.75rem;
+$transition-speed: 0.3s;
+$box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+$box-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+$box-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+
+// 容器
+$container-padding: $spacing-md;
+$container-padding-sm: $spacing-sm;
+$container-padding-lg: $spacing-lg;
+
+// 響應式斷點
+$breakpoint-sm: 640px;
+$breakpoint-md: 768px;
+$breakpoint-lg: 1024px;
+$breakpoint-xl: 1280px;
+$breakpoint-2xl: 1536px;
+
+// 移動裝置斷點別名
+$breakpoint-mobile: $breakpoint-sm;
+$breakpoint-tablet: $breakpoint-md;
+$breakpoint-desktop: $breakpoint-lg;
+
+// CSS變數定義 - 用於全域存取
+:root {
+    --color-primary: #{$primary-color};
+    --color-primary-dark: #{$primary-dark};
+    --color-secondary: #{$secondary-color};
+    --color-accent: #{$accent-color};
+
+    --box-shadow-soft: #{$box-shadow-md};
+    --box-shadow-strong: #{$box-shadow-lg};
+
+    --border-radius: #{$border-radius};
+    --transition-speed: #{$transition-speed};
+
+    --color-background: #{$light-bg-alt};
+    --color-text: #{$light-text};
+    --color-text-light: #ffffff;
+
+    // 全屏模式變數
+    --fullscreen-z-index: 1000;
+    --map-control-z-index: 1010;
+}
+
+:global(.darkMode) {
+    --color-background: #{$dark-bg-alt};
+    --color-text: #{$dark-text};
+    --color-text-light: #ffffff;
+}

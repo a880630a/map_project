@@ -1,0 +1,51 @@
+@import "./variables.scss";
+
+// 全局重置
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+// 主容器
+.appContainer {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    width: 100vw;
+    font-family: "Inter", "Noto Sans TC", sans-serif;
+    background-color: $light-bg;
+    color: $light-text;
+    transition: background-color $transition-speed, color $transition-speed;
+    overflow-x: hidden;
+
+    &.darkMode,
+    :global(.darkMode) & {
+        background-color: $dark-bg;
+        color: $dark-text;
+    }
+}
+
+// 主要內容
+.mainContent {
+    display: flex;
+    flex: 1;
+    height: calc(100vh - 10rem);
+    width: 100%;
+    position: relative;
+    padding: $spacing-md;
+    gap: $spacing-md;
+    overflow: hidden;
+
+    @media (max-width: $breakpoint-md) {
+        flex-direction: column;
+        height: auto;
+        gap: $spacing-md;
+        min-height: calc(100vh - 10rem);
+    }
+
+    @media (max-width: $breakpoint-sm) {
+        padding: $spacing-sm;
+        gap: $spacing-sm;
+    }
+}

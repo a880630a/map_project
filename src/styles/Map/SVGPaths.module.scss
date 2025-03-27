@@ -1,0 +1,166 @@
+@import "../variables.scss";
+
+@keyframes pulse {
+    0% {
+        opacity: 0.8;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0.8;
+    }
+}
+
+@keyframes dash {
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+@keyframes glow {
+    0% {
+        filter: drop-shadow(0 0 2px currentColor);
+    }
+    50% {
+        filter: drop-shadow(0 0 8px currentColor);
+    }
+    100% {
+        filter: drop-shadow(0 0 2px currentColor);
+    }
+}
+
+.building {
+    transition: fill $transition-speed;
+
+    :global(.darkMode) & {
+        fill: rgba(30, 41, 59, 0.7);
+        stroke: rgba(255, 255, 255, 0.3);
+    }
+}
+
+.pathGroup {
+    opacity: 0.6;
+    cursor: pointer;
+    transition: opacity $transition-speed, transform $transition-speed;
+
+    &:hover {
+        opacity: 0.9;
+        transform: translate(0, -2px);
+    }
+
+    &.selected {
+        opacity: 1;
+        transform: translate(0, -2px);
+    }
+}
+
+.path {
+    fill: $path-color-inactive;
+    stroke: rgba(0, 0, 0, 0.5);
+    stroke-width: 2;
+    transition: fill $transition-speed, stroke $transition-speed;
+
+    :global(.darkMode) & {
+        stroke: rgba(255, 255, 255, 0.3);
+    }
+
+    .pathGroup:nth-child(13) & {
+        fill: transparent;
+        stroke: $path-color-1;
+        stroke-width: 4;
+        stroke-dasharray: 2000;
+        stroke-dashoffset: 2000;
+    }
+
+    .pathGroup:nth-child(14) & {
+        fill: transparent;
+        stroke: $path-color-2;
+        stroke-width: 4;
+        stroke-dasharray: 2000;
+        stroke-dashoffset: 2000;
+    }
+
+    .pathGroup:nth-child(15) & {
+        fill: transparent;
+        stroke: $path-color-3;
+        stroke-width: 4;
+        stroke-dasharray: 2000;
+        stroke-dashoffset: 2000;
+    }
+
+    .pathGroup.selected:nth-child(13) & {
+        fill: transparentize($path-color-1, 0.7);
+        animation: dash 10s infinite, pulse 3s infinite, glow 3s infinite;
+        filter: url(#glow);
+    }
+
+    .pathGroup.selected:nth-child(14) & {
+        fill: transparentize($path-color-2, 0.7);
+        animation: dash 10s infinite, pulse 3s infinite, glow 3s infinite;
+        filter: url(#glow);
+    }
+
+    .pathGroup.selected:nth-child(15) & {
+        fill: transparentize($path-color-3, 0.7);
+        animation: dash 10s infinite, pulse 3s infinite, glow 3s infinite;
+        filter: url(#glow);
+    }
+}
+
+.arrow {
+    stroke: none;
+    stroke-width: 2;
+    fill: none;
+
+    &.activeArrow1 {
+        stroke: $path-color-1;
+    }
+
+    &.activeArrow2 {
+        stroke: $path-color-2;
+    }
+
+    &.activeArrow3 {
+        stroke: $path-color-3;
+    }
+
+    .pathGroup.selected & {
+        animation: glow 2s infinite;
+        stroke-width: 4;
+    }
+}
+
+.pathMarker {
+    fill: white;
+    stroke-width: 2;
+    opacity: 0;
+    transition: opacity $transition-speed, fill $transition-speed,
+        stroke $transition-speed;
+    cursor: pointer;
+
+    .pathGroup:nth-child(13) & {
+        stroke: $path-color-1;
+    }
+
+    .pathGroup:nth-child(14) & {
+        stroke: $path-color-2;
+    }
+
+    .pathGroup:nth-child(15) & {
+        stroke: $path-color-3;
+    }
+
+    .pathGroup.selected & {
+        opacity: 1;
+    }
+
+    &:hover {
+        fill: #f9fafb;
+        transform: scale(1.2);
+    }
+
+    :global(.darkMode) & {
+        fill: rgba(30, 41, 59, 0.9);
+    }
+}

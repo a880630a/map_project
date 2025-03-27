@@ -1,0 +1,38 @@
+@import "../variables.scss";
+
+.footer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: $spacing-md $spacing-xl;
+    background-color: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.05);
+    transition: background-color $transition-speed, box-shadow $transition-speed;
+    width: 100%;
+    position: relative;
+    z-index: 10;
+
+    :global(.darkMode) & {
+        background-color: rgba(17, 24, 39, 0.9);
+        box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.2);
+    }
+
+    @media (max-width: $breakpoint-md) {
+        padding: $spacing-md $spacing-lg;
+    }
+
+    @media (max-width: $breakpoint-sm) {
+        padding: $spacing-sm $spacing-md;
+    }
+}
+
+.copyright {
+    font-size: $font-size-sm;
+    color: $light-text-secondary;
+    transition: color $transition-speed;
+
+    :global(.darkMode) & {
+        color: $dark-text-secondary;
+    }
+}
