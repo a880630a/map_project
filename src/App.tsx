@@ -262,7 +262,10 @@ function App() {
                                         pointer-events="all"
                                     />
                                     <path
-                                        className={styles.arrow}
+                                        className={clsx(styles.arrow, {
+                                            [styles.activeArrow1]:
+                                                selectedPath === "path-1",
+                                        })}
                                         d="M 195.01 389.49 L 184.51 389.48 L 200.04 370.5 L 215.51 389.52 L 205.01 389.51"
                                         stroke-miterlimit="4"
                                         pointer-events="all"
@@ -283,7 +286,10 @@ function App() {
                                         pointer-events="all"
                                     />
                                     <path
-                                        className={styles.arrow}
+                                        className={clsx(styles.arrow, {
+                                            [styles.activeArrow2]:
+                                                selectedPath === "path-2",
+                                        })}
                                         d="M 375 110.5 L 385.5 110.5 L 370 129.5 L 354.5 110.5 L 365 110.5"
                                         stroke-miterlimit="4"
                                         pointer-events="all"
@@ -304,7 +310,10 @@ function App() {
                                         pointer-events="all"
                                     />
                                     <path
-                                        className={styles.arrow}
+                                        className={clsx(styles.arrow, {
+                                            [styles.activeArrow3]:
+                                                selectedPath === "path-3",
+                                        })}
                                         d="M 829.5 235 L 829.5 245.5 L 810.5 230 L 829.5 214.5 L 829.5 225"
                                         stroke-miterlimit="4"
                                         pointer-events="all"

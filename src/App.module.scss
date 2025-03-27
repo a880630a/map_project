@@ -262,23 +262,20 @@ $path-color-3: #ffd166;
 }
 
 .arrow {
-    stroke: #666;
+    stroke: none;
     stroke-width: 2;
     fill: none;
 
-    .pathGroup:nth-child(13) & {
+    &.activeArrow1 {
         stroke: $path-color-1;
-        stroke-width: 3;
     }
 
-    .pathGroup:nth-child(14) & {
+    &.activeArrow2 {
         stroke: $path-color-2;
-        stroke-width: 3;
     }
 
-    .pathGroup:nth-child(15) & {
+    &.activeArrow3 {
         stroke: $path-color-3;
-        stroke-width: 3;
     }
 
     .pathGroup.selected & {
