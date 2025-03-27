@@ -1,0 +1,533 @@
+// 變量定義
+$primary-color: #3498db;
+$primary-dark: #2980b9;
+$secondary-color: #2ecc71;
+$secondary-dark: #27ae60;
+$accent-color: #e74c3c;
+$accent-dark: #c0392b;
+$light-bg: #f9f9f9;
+$dark-bg: #1a1a2e;
+$light-text: #333;
+$dark-text: #ecf0f1;
+$border-radius: 12px;
+$transition-speed: 0.3s;
+$box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+$path-color-inactive: rgba(100, 100, 100, 0.5);
+$path-color-1: #ff6b6b;
+$path-color-2: #4ecdc4;
+$path-color-3: #ffd166;
+
+// 全局重置
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 0.7;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0.7;
+    }
+}
+
+@keyframes dash {
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+@keyframes glow {
+    0% {
+        filter: drop-shadow(0 0 2px currentColor);
+    }
+    50% {
+        filter: drop-shadow(0 0 8px currentColor);
+    }
+    100% {
+        filter: drop-shadow(0 0 2px currentColor);
+    }
+}
+
+@keyframes moveDot {
+    0% {
+        offset-distance: 0%;
+    }
+    100% {
+        offset-distance: 100%;
+    }
+}
+
+// 主容器
+.appContainer {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    font-family: "Inter", "Noto Sans TC", sans-serif;
+    background-color: $light-bg;
+    color: $light-text;
+    transition: background-color $transition-speed, color $transition-speed;
+
+    &.darkMode {
+        background-color: $dark-bg;
+        color: $dark-text;
+
+        .mapContainer {
+            background-color: rgba(30, 30, 45, 0.9);
+        }
+
+        .sidebar {
+            background-color: rgba(40, 40, 60, 0.9);
+        }
+
+        .pathButton {
+            background-color: rgba(60, 60, 80, 0.8);
+            color: $dark-text;
+
+            &:hover {
+                background-color: rgba(80, 80, 100, 0.9);
+            }
+
+            &.active {
+                background-color: $primary-dark;
+            }
+        }
+
+        .pathDetails {
+            background-color: rgba(50, 50, 70, 0.9);
+        }
+    }
+}
+
+// 頁頭
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 2rem;
+    background-color: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    z-index: 10;
+
+    .darkMode & {
+        background-color: rgba(30, 30, 45, 0.8);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    }
+}
+
+.title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    background: linear-gradient(45deg, $primary-color, $secondary-color);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+
+    .darkMode & {
+        background: linear-gradient(
+            45deg,
+            lighten($primary-color, 10%),
+            lighten($secondary-color, 10%)
+        );
+        -webkit-background-clip: text;
+        background-clip: text;
+    }
+}
+
+.themeToggle {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 50%;
+    transition: transform $transition-speed, background-color $transition-speed;
+
+    &:hover {
+        transform: rotate(15deg);
+        background-color: rgba(0, 0, 0, 0.05);
+
+        .darkMode & {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+    }
+}
+
+// 主要內容
+.mainContent {
+    display: flex;
+    flex: 1;
+    height: calc(100vh - 13rem);
+    position: relative;
+    padding: 0.5rem;
+    gap: 1rem;
+
+    @media (max-width: 768px) {
+        flex-direction: column;
+        height: auto;
+    }
+}
+
+// 地圖容器
+.mapContainer {
+    flex: 1;
+    position: relative;
+    background-color: white;
+    border-radius: $border-radius;
+    overflow: hidden;
+    box-shadow: $box-shadow;
+    min-height: 50vh;
+
+    @media (max-width: 768px) {
+        height: 50vh;
+    }
+}
+
+.map {
+    width: 100%;
+    height: 100%;
+    transition: transform 0.5s ease;
+}
+
+// 路徑樣式
+.pathGroup {
+    opacity: 0.6;
+    cursor: pointer;
+    transition: opacity $transition-speed, transform $transition-speed;
+
+    &:hover {
+        opacity: 0.9;
+        transform: translate(0, -2px);
+    }
+
+    &.selected {
+        opacity: 1;
+        transform: translate(0, -2px);
+    }
+}
+
+.path {
+    fill: $path-color-inactive;
+    stroke: rgba(0, 0, 0, 0.5);
+    stroke-width: 2;
+    transition: fill $transition-speed, stroke $transition-speed;
+
+    .pathGroup:nth-child(13) & {
+        fill: transparent;
+        stroke: $path-color-1;
+        stroke-width: 4;
+        stroke-dasharray: 2000;
+        stroke-dashoffset: 2000;
+    }
+
+    .pathGroup:nth-child(14) & {
+        fill: transparent;
+        stroke: $path-color-2;
+        stroke-width: 4;
+        stroke-dasharray: 2000;
+        stroke-dashoffset: 2000;
+    }
+
+    .pathGroup:nth-child(15) & {
+        fill: transparent;
+        stroke: $path-color-3;
+        stroke-width: 4;
+        stroke-dasharray: 2000;
+        stroke-dashoffset: 2000;
+    }
+
+    .pathGroup.selected:nth-child(13) & {
+        fill: transparentize($path-color-1, 0.7);
+        animation: dash 10s infinite, pulse 3s infinite, glow 3s infinite;
+        filter: url(#glow);
+    }
+
+    .pathGroup.selected:nth-child(14) & {
+        fill: transparentize($path-color-2, 0.7);
+        animation: dash 10s infinite, pulse 3s infinite, glow 3s infinite;
+        filter: url(#glow);
+    }
+
+    .pathGroup.selected:nth-child(15) & {
+        fill: transparentize($path-color-3, 0.7);
+        animation: dash 10s infinite, pulse 3s infinite, glow 3s infinite;
+        filter: url(#glow);
+    }
+}
+
+.arrow {
+    stroke: #666;
+    stroke-width: 2;
+    fill: none;
+
+    .pathGroup:nth-child(13) & {
+        stroke: $path-color-1;
+        stroke-width: 3;
+    }
+
+    .pathGroup:nth-child(14) & {
+        stroke: $path-color-2;
+        stroke-width: 3;
+    }
+
+    .pathGroup:nth-child(15) & {
+        stroke: $path-color-3;
+        stroke-width: 3;
+    }
+
+    .pathGroup.selected & {
+        animation: glow 2s infinite;
+        stroke-width: 4;
+    }
+}
+
+// 側邊欄
+.sidebar {
+    width: 350px;
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: $border-radius;
+    box-shadow: $box-shadow;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+    display: flex;
+    flex-direction: column;
+
+    @media (max-width: 768px) {
+        width: 100%;
+    }
+}
+
+.controlPanel {
+    padding: 1.5rem;
+
+    h2 {
+        font-size: 1.4rem;
+        margin-bottom: 1rem;
+        font-weight: 600;
+    }
+}
+
+.pathOptions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.pathButton {
+    padding: 1rem 1.25rem;
+    border: none;
+    border-radius: $border-radius;
+    background-color: rgba(240, 240, 240, 0.8);
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    text-align: left;
+    transition: all $transition-speed;
+    display: flex;
+    align-items: center;
+
+    &:hover {
+        background-color: rgba(220, 220, 220, 0.9);
+        transform: translateY(-2px);
+    }
+
+    &.active {
+        background-color: $primary-color;
+        color: white;
+        box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
+
+        &:nth-child(1) {
+            background-color: $path-color-1;
+            box-shadow: 0 4px 8px rgba(255, 107, 107, 0.3);
+        }
+
+        &:nth-child(2) {
+            background-color: $path-color-2;
+            box-shadow: 0 4px 8px rgba(78, 205, 196, 0.3);
+        }
+
+        &:nth-child(3) {
+            background-color: $path-color-3;
+            box-shadow: 0 4px 8px rgba(255, 209, 102, 0.3);
+        }
+    }
+
+    &:before {
+        content: "";
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        margin-right: 12px;
+    }
+
+    &:nth-child(1):before {
+        background-color: $path-color-1;
+    }
+
+    &:nth-child(2):before {
+        background-color: $path-color-2;
+    }
+
+    &:nth-child(3):before {
+        background-color: $path-color-3;
+    }
+}
+
+.pathDetails {
+    margin-top: auto;
+    padding: 1.5rem;
+    background-color: rgba(245, 245, 245, 0.9);
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+
+    h3 {
+        font-size: 1.3rem;
+        margin-bottom: 0.75rem;
+        font-weight: 600;
+    }
+
+    .description {
+        margin-bottom: 1.25rem;
+        line-height: 1.5;
+        color: rgba(0, 0, 0, 0.7);
+
+        .darkMode & {
+            color: rgba(255, 255, 255, 0.8);
+        }
+    }
+}
+
+.stats {
+    display: flex;
+    gap: 1rem;
+}
+
+.stat {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background-color: rgba(255, 255, 255, 0.7);
+    border-radius: $border-radius;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+
+    .darkMode & {
+        background-color: rgba(60, 60, 80, 0.7);
+    }
+
+    .icon {
+        font-size: 1.25rem;
+        margin-right: 0.5rem;
+    }
+
+    .value {
+        font-weight: 500;
+    }
+}
+
+// 頁尾
+.footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 2rem;
+    background-color: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.05);
+
+    .darkMode & {
+        background-color: rgba(30, 30, 45, 0.8);
+        box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.2);
+    }
+
+    p {
+        font-size: 0.9rem;
+        color: rgba(0, 0, 0, 0.6);
+
+        .darkMode & {
+            color: rgba(255, 255, 255, 0.6);
+        }
+    }
+}
+
+.controls {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.zoomButton,
+.resetButton {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background-color: white;
+    color: $light-text;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    transition: all $transition-speed;
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .darkMode & {
+        background-color: rgba(60, 60, 80, 0.8);
+        color: $dark-text;
+    }
+}
+
+// 響應式調整
+@media (max-width: 992px) {
+    .header {
+        padding: 1rem 1.5rem;
+    }
+
+    .title {
+        font-size: 1.5rem;
+    }
+
+    .sidebar {
+        width: 300px;
+    }
+}
+
+@media (max-width: 768px) {
+    .mainContent {
+        padding: 0.5rem;
+    }
+
+    .footer {
+        padding: 1rem 1.5rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .header {
+        padding: 0.75rem 1rem;
+    }
+
+    .title {
+        font-size: 1.3rem;
+    }
+
+    .controls {
+        gap: 0.25rem;
+    }
+
+    .zoomButton,
+    .resetButton {
+        width: 32px;
+        height: 32px;
+    }
+}
