@@ -23,29 +23,43 @@
         filter: drop-shadow(0 0 2px currentColor);
     }
     50% {
-        filter: drop-shadow(0 0 8px currentColor);
+        filter: drop-shadow(0 0 8px currentColor) brightness(1.2);
     }
     100% {
         filter: drop-shadow(0 0 2px currentColor);
     }
 }
 
+@keyframes strongGlow {
+    0% {
+        filter: brightness(1.2) drop-shadow(0 0 15px currentColor)
+            drop-shadow(0 0 25px currentColor);
+    }
+    100% {
+        filter: brightness(1.5) drop-shadow(0 0 25px currentColor)
+            drop-shadow(0 0 35px currentColor);
+    }
+}
+
 .building {
     transition: fill $transition-speed;
+    fill: rgba(240, 240, 240, 0.9);
+    stroke: rgba(100, 100, 100, 0.6);
+    stroke-width: 1;
 
     :global(.darkMode) & {
-        fill: rgba(30, 41, 59, 0.7);
-        stroke: rgba(255, 255, 255, 0.3);
+        fill: rgba(45, 55, 72, 0.7);
+        stroke: rgba(255, 255, 255, 0.5);
     }
 }
 
 .pathGroup {
-    opacity: 0.6;
+    opacity: 0.8;
     cursor: pointer;
     transition: opacity $transition-speed, transform $transition-speed;
 
     &:hover {
-        opacity: 0.9;
+        opacity: 1;
         transform: translate(0, -2px);
     }
 
@@ -55,56 +69,56 @@
     }
 }
 
-.path {
-    fill: $path-color-inactive;
-    stroke: rgba(0, 0, 0, 0.5);
-    stroke-width: 2;
-    transition: fill $transition-speed, stroke $transition-speed;
+.pathsContainer {
+    pointer-events: all;
+    z-index: 5;
+}
 
-    :global(.darkMode) & {
-        stroke: rgba(255, 255, 255, 0.3);
+.path {
+    fill: none;
+    stroke-width: 4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: all 0.3s ease;
+    pointer-events: all;
+    cursor: pointer;
+
+    &:hover {
+        stroke-width: 6;
+        filter: drop-shadow(0 0 6px currentColor);
     }
 
     .pathGroup:nth-child(13) & {
-        fill: transparent;
         stroke: $path-color-1;
-        stroke-width: 4;
-        stroke-dasharray: 2000;
-        stroke-dashoffset: 2000;
     }
 
     .pathGroup:nth-child(14) & {
-        fill: transparent;
         stroke: $path-color-2;
-        stroke-width: 4;
-        stroke-dasharray: 2000;
-        stroke-dashoffset: 2000;
     }
 
     .pathGroup:nth-child(15) & {
-        fill: transparent;
         stroke: $path-color-3;
-        stroke-width: 4;
-        stroke-dasharray: 2000;
-        stroke-dashoffset: 2000;
     }
 
     .pathGroup.selected:nth-child(13) & {
-        fill: transparentize($path-color-1, 0.7);
-        animation: dash 10s infinite, pulse 3s infinite, glow 3s infinite;
-        filter: url(#glow);
+        stroke: $path-color-1;
+        stroke-dasharray: 1000;
+        stroke-dashoffset: 1000;
+        animation: drawPath 2s ease forwards;
     }
 
     .pathGroup.selected:nth-child(14) & {
-        fill: transparentize($path-color-2, 0.7);
-        animation: dash 10s infinite, pulse 3s infinite, glow 3s infinite;
-        filter: url(#glow);
+        stroke: $path-color-2;
+        stroke-dasharray: 1000;
+        stroke-dashoffset: 1000;
+        animation: drawPath 2s ease forwards 0.3s;
     }
 
     .pathGroup.selected:nth-child(15) & {
-        fill: transparentize($path-color-3, 0.7);
-        animation: dash 10s infinite, pulse 3s infinite, glow 3s infinite;
-        filter: url(#glow);
+        stroke: $path-color-3;
+        stroke-dasharray: 1000;
+        stroke-dashoffset: 1000;
+        animation: drawPath 2s ease forwards 0.6s;
     }
 }
 
@@ -162,5 +176,275 @@
 
     :global(.darkMode) & {
         fill: rgba(30, 41, 59, 0.9);
+    }
+}
+
+/* 建築物群組 */
+.buildingGroup {
+    fill: rgba(240, 240, 240, 0.8);
+    stroke: rgba(160, 160, 160, 0.8);
+    stroke-width: 1;
+
+    :global(.darkMode) & {
+        fill: rgba(75, 85, 99, 0.6);
+        stroke: rgba(160, 170, 180, 0.7);
+    }
+}
+
+/* 路徑群組 */
+.pathsGroup {
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+/* 路徑標籤樣式 */
+.pathLabel {
+    font-size: 14px;
+    font-weight: 500;
+    fill: rgba(60, 60, 60, 0.9);
+    transition: all 0.5s ease;
+    filter: drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.1));
+
+    :global(.darkMode) & {
+        fill: rgba(240, 240, 240, 0.9);
+        filter: drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.5));
+    }
+}
+
+/* 東區路線 */
+.eastPath {
+    stroke: $path-color-1;
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 1000;
+    animation: drawPath 2s ease forwards;
+
+    &:hover {
+        stroke-width: 8;
+        filter: drop-shadow(0px 3px 6px rgba(231, 76, 60, 0.5));
+    }
+
+    :global(.darkMode) & {
+        stroke: lighten($path-color-1, 15%);
+    }
+}
+
+/* 中央路線 */
+.centralPath {
+    stroke: $path-color-2;
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 1000;
+    animation: drawPath 2s ease forwards 0.3s;
+
+    &:hover {
+        stroke-width: 8;
+        filter: drop-shadow(0px 3px 6px rgba(52, 152, 219, 0.5));
+    }
+
+    :global(.darkMode) & {
+        stroke: lighten($path-color-2, 15%);
+    }
+}
+
+/* 西區環線 */
+.westPath {
+    stroke: $path-color-3;
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 1000;
+    animation: drawPath 2s ease forwards 0.6s;
+
+    &:hover {
+        stroke-width: 8;
+        filter: drop-shadow(0px 3px 6px rgba(46, 204, 113, 0.5));
+    }
+
+    :global(.darkMode) & {
+        stroke: lighten($path-color-3, 15%);
+    }
+}
+
+/* 選中路線的樣式 */
+.selectedPath {
+    stroke-width: 8;
+    filter: drop-shadow(0 0 4px currentColor) drop-shadow(0 0 8px currentColor)
+        drop-shadow(0 0 12px currentColor);
+    z-index: 10;
+    animation: glow 2s infinite;
+}
+
+/* 非選中路線樣式 - 當有選中路線時 */
+.pathDimmed {
+    opacity: 0.4;
+    filter: blur(0.5px);
+    transition: opacity 0.5s ease, filter 0.5s ease;
+
+    &:hover {
+        opacity: 0.7;
+        filter: blur(0px);
+    }
+}
+
+/* 選中標籤的樣式 */
+.selectedLabel {
+    font-weight: 700;
+    font-size: 18px;
+    fill: $primary-color;
+    filter: drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.4));
+    transform: scale(1.1);
+    transform-origin: center;
+    animation: pulse 2s infinite;
+
+    :global(.darkMode) & {
+        fill: lighten($primary-color, 25%);
+        filter: drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.7));
+    }
+}
+
+/* 動畫：繪製路徑 */
+@keyframes drawPath {
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+/* 簡化的發光動畫 */
+@keyframes simpleGlow {
+    0% {
+        filter: drop-shadow(0 0 3px currentColor)
+            drop-shadow(0 0 6px currentColor);
+    }
+    50% {
+        filter: drop-shadow(0 0 6px currentColor)
+            drop-shadow(0 0 12px currentColor);
+    }
+    100% {
+        filter: drop-shadow(0 0 3px currentColor)
+            drop-shadow(0 0 6px currentColor);
+    }
+}
+
+/* 繪圖工具樣式 */
+.drawingLayer {
+    pointer-events: all;
+    cursor: crosshair;
+    z-index: 20;
+}
+
+.drawingPath {
+    fill: none;
+    stroke: #ff0000;
+    stroke-width: 4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    pointer-events: none;
+    opacity: 0.8;
+}
+
+/* 顏色選擇器樣式 */
+.colorPickerContainer {
+    overflow: visible;
+    pointer-events: all;
+    z-index: 1100;
+}
+
+.colorPicker {
+    background-color: rgba(255, 255, 255, 0.95);
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15), 0 8px 30px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    min-width: 280px;
+    backdrop-filter: blur(10px);
+
+    h4,
+    h5 {
+        margin: 0 0 15px 0;
+        color: #333;
+        font-weight: 600;
+    }
+
+    h4 {
+        font-size: 18px;
+        border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+        padding-bottom: 10px;
+    }
+
+    h5 {
+        font-size: 14px;
+        color: #666;
+    }
+
+    :global(.darkMode) & {
+        background-color: rgba(30, 41, 59, 0.95);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), 0 8px 30px rgba(0, 0, 0, 0.2);
+
+        h4 {
+            color: #f1f5f9;
+            border-bottom-color: rgba(255, 255, 255, 0.1);
+        }
+
+        h5 {
+            color: #cbd5e1;
+        }
+    }
+}
+
+.colorPickerButtons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 20px;
+
+    button {
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        border: none;
+        cursor: pointer;
+
+        &.continueButton,
+        &.saveButton {
+            background-color: $primary-color;
+            color: white;
+
+            &:hover {
+                background-color: darken($primary-color, 10%);
+                transform: translateY(-1px);
+            }
+        }
+
+        &.cancelButton,
+        &.backButton {
+            background-color: transparent;
+            border: 1px solid rgba(0, 0, 0, 0.2);
+            color: #666;
+
+            &:hover {
+                background-color: rgba(0, 0, 0, 0.05);
+                border-color: rgba(0, 0, 0, 0.3);
+            }
+        }
+
+        :global(.darkMode) & {
+            &.continueButton,
+            &.saveButton {
+                background-color: lighten($primary-color, 5%);
+
+                &:hover {
+                    background-color: lighten($primary-color, 10%);
+                }
+            }
+
+            &.cancelButton,
+            &.backButton {
+                border-color: rgba(255, 255, 255, 0.2);
+                color: #cbd5e1;
+
+                &:hover {
+                    background-color: rgba(255, 255, 255, 0.1);
+                    border-color: rgba(255, 255, 255, 0.3);
+                }
+            }
+        }
     }
 }

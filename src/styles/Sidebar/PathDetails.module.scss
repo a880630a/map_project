@@ -42,6 +42,16 @@
     }
 }
 
+.noSelection {
+    text-align: center;
+    color: $light-text-secondary;
+    font-style: italic;
+
+    :global(.darkMode) & {
+        color: $dark-text-secondary;
+    }
+}
+
 .pathHeader {
     display: flex;
     justify-content: space-between;

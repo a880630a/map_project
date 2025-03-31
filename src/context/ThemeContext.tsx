@@ -5,7 +5,7 @@ import React, {
     useEffect,
     ReactNode,
 } from "react";
-import { ThemeContextType } from "../types";
+import { ThemeContextType } from "../types/index";
 
 const ThemeContext = createContext<ThemeContextType>({
     isDarkMode: false,

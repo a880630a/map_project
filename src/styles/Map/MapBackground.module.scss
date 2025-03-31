@@ -1,0 +1,83 @@
+@import "../variables.scss";
+
+.mapBackground {
+    opacity: 1;
+}
+
+.background {
+    fill: #f8f9fa;
+
+    :global(.darkMode) & {
+        fill: #1a202c;
+    }
+}
+
+.mainArea {
+    fill: #ffffff;
+    stroke: #e2e8f0;
+    stroke-width: 1;
+
+    :global(.darkMode) & {
+        fill: #2d3748;
+        stroke: #4a5568;
+    }
+}
+
+.buildings {
+    .building {
+        fill: #edf2f7;
+        stroke: #cbd5e0;
+        stroke-width: 1;
+
+        :global(.darkMode) & {
+            fill: #4a5568;
+            stroke: #718096;
+        }
+    }
+}
+
+.roads {
+    .mainRoad {
+        stroke: #cbd5e0;
+        stroke-width: 8;
+        stroke-linecap: round;
+        fill: none;
+
+        :global(.darkMode) & {
+            stroke: #4a5568;
+        }
+    }
+
+    .secondaryRoad {
+        stroke: #e2e8f0;
+        stroke-width: 4;
+        stroke-linecap: round;
+        fill: none;
+
+        :global(.darkMode) & {
+            stroke: #718096;
+        }
+    }
+}
+
+.parkArea {
+    fill: #c6f6d5;
+    stroke: #9ae6b4;
+    stroke-width: 1;
+
+    :global(.darkMode) & {
+        fill: #276749;
+        stroke: #38a169;
+    }
+}
+
+.waterArea {
+    fill: #bee3f8;
+    stroke: #90cdf4;
+    stroke-width: 1;
+
+    :global(.darkMode) & {
+        fill: #2c5282;
+        stroke: #3182ce;
+    }
+}

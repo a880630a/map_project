@@ -5,6 +5,7 @@ import {
     useContext,
     ReactNode,
     useEffect,
+    useRef,
 } from "react";
 import {
     TOOL_PAN,
@@ -19,7 +20,8 @@ import {
     MapActionHandlers,
     MapActionPayload,
     MapActionTypes,
-} from "../types/map";
+} from "../types/index";
+import { usePath } from "../context/PathContext";
 
 interface MapControlContextType {
     tool: string;
@@ -30,315 +32,165 @@ interface MapControlContextType {
     zoomOut: () => void;
     resetView: () => void;
     handleClick: (event: ViewerMouseEvent) => void;
+    isFullscreen: boolean;
+    executeMapAction: (
+        action: MapActionTypes,
+        payload?: MapActionPayload
+    ) => void;
+    mapViewerRef: React.RefObject<SVGPanZoom>;
+    containerRef: React.RefObject<HTMLDivElement>;
 }
 
-const MapControlContext = createContext<MapControlContextType>({
-    tool: TOOL_PAN,
-    setTool: () => {},
-    value: {} as Value,
-    onChangeValue: () => {},
-    zoomIn: () => {},
-    zoomOut: () => {},
-    resetView: () => {},
-    handleClick: () => {},
-});
+const initialValue: Value = {
+    version: 2,
+    mode: "idle",
+    focus: false,
+    a: 1,
+    b: 0,
+    c: 0,
+    d: 1,
+    e: 0,
+    f: 0,
+    viewerWidth: 800,
+    viewerHeight: 600,
+    SVGWidth: 800,
+    SVGHeight: 600,
+    startX: null,
+    startY: null,
+    endX: null,
+    endY: null,
+    miniatureOpen: false,
+};
+
+const MapControlContext = createContext<MapControlContextType | undefined>(
+    undefined
+);
+
+const useProvideMapControl = (): MapControlContextType => {
+    const [tool, setTool] = useState<string>(TOOL_PAN);
+    const [value, setValue] = useState<Value>(initialValue);
+    const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
+    const mapViewerRef = useRef<SVGPanZoom>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
+    const { setSelectedPath } = usePath();
+
+    // 監聽全螢幕狀態變化
+    useEffect(() => {
+        const handleFullscreenChange = () => {
+            setIsFullscreen(!!document.fullscreenElement);
+        };
+
+        document.addEventListener("fullscreenchange", handleFullscreenChange);
+        return () => {
+            document.removeEventListener(
+                "fullscreenchange",
+                handleFullscreenChange
+            );
+        };
+    }, []);
+
+    const onChangeValue = (newValue: Value) => {
+        setValue(newValue);
+    };
+
+    const handleClick = (event: ViewerMouseEvent) => {
+        const target = event.originalEvent.target as Element;
+        const pathId = target.getAttribute("data-path-id");
+
+        if (pathId) {
+            setSelectedPath(pathId);
+        }
+    };
+
+    const zoomIn = useCallback(() => {
+        if (mapViewerRef.current) {
+            mapViewerRef.current.zoomOnViewerCenter(1.1);
+        }
+    }, []);
+
+    const zoomOut = useCallback(() => {
+        if (mapViewerRef.current) {
+            mapViewerRef.current.zoomOnViewerCenter(0.9);
+        }
+    }, []);
+
+    const resetView = useCallback(() => {
+        if (mapViewerRef.current) {
+            mapViewerRef.current.fitToViewer();
+        }
+    }, []);
+
+    const toggleFullscreen = useCallback(() => {
+        if (!containerRef.current) return;
+
+        if (!document.fullscreenElement) {
+            containerRef.current.requestFullscreen().catch((err) => {
+                console.error(`無法進入全螢幕模式: ${err.message}`);
+            });
+        } else {
+            document.exitFullscreen().catch((err) => {
+                console.error(`無法離開全螢幕模式: ${err.message}`);
+            });
+        }
+    }, []);
+
+    const actionHandlers: MapActionHandlers = {
+        [MapActionTypes.ZOOM_IN]: zoomIn,
+        [MapActionTypes.ZOOM_OUT]: zoomOut,
+        [MapActionTypes.RESET_VIEW]: resetView,
+        [MapActionTypes.SELECT_ROUTE]: (payload: MapActionPayload) => {
+            if (payload?.routeId) {
+                setSelectedPath(payload.routeId);
+            }
+        },
+        [MapActionTypes.TOGGLE_FULLSCREEN]: toggleFullscreen,
+    };
+
+    const executeMapAction = (
+        action: MapActionTypes,
+        payload?: MapActionPayload
+    ) => {
+        const handler = actionHandlers[action];
+        if (handler) {
+            handler(payload as any);
+        } else {
+            console.warn(`未處理的地圖操作: ${action}`);
+        }
+    };
+
+    return {
+        tool,
+        setTool,
+        value,
+        onChangeValue,
+        zoomIn,
+        zoomOut,
+        resetView,
+        handleClick,
+        isFullscreen,
+        executeMapAction,
+        mapViewerRef,
+        containerRef,
+    };
+};
 
 interface MapControlProviderProps {
     children: ReactNode;
 }
 
 export const MapControlProvider = ({ children }: MapControlProviderProps) => {
-    const [tool, setTool] = useState<Tool>("pan");
-    const [value, setValue] = useState<Value>({
-        version: 2,
-        viewerWidth: 0,
-        viewerHeight: 0,
-        SVGWidth: 870,
-        SVGHeight: 650,
-        startX: null,
-        startY: null,
-        endX: null,
-        endY: null,
-        mode: "idle",
-        focus: false,
-        points: [],
-        scale: 1,
-        translation: { x: 0, y: 0 },
-        scaleFactorMin: 0.5,
-        scaleFactorMax: 5,
-    });
-    const [isFullscreen, setIsFullscreen] = useState(false);
-    const [viewerState, setViewerState] = useState({
-        viewerWidth: window.innerWidth > 1600 ? 1600 : window.innerWidth - 40,
-        viewerHeight: window.innerHeight > 800 ? 800 : window.innerHeight - 100,
-    });
-
-    // 處理視窗調整事件
-    useEffect(() => {
-        const updateDimensions = () => {
-            const width = window.innerWidth;
-            const height = window.innerHeight;
-
-            // 全屏模式
-            if (isFullscreen) {
-                setViewerState({
-                    viewerWidth: width,
-                    viewerHeight: height,
-                });
-            } else {
-                // 一般模式，保持較大視圖限制
-                setViewerState({
-                    viewerWidth: width > 1600 ? 1600 : width - 40,
-                    viewerHeight: height > 800 ? 800 : height - 100,
-                });
-            }
-        };
-
-        // 初始設定
-        updateDimensions();
-
-        // 監聽調整大小事件
-        window.addEventListener("resize", updateDimensions);
-
-        return () => {
-            window.removeEventListener("resize", updateDimensions);
-        };
-    }, [isFullscreen]);
-
-    /**
-     * 切換全屏模式
-     */
-    const toggleFullscreen = useCallback(() => {
-        setIsFullscreen((prev) => !prev);
-    }, []);
-
-    /**
-     * 處理值變化
-     */
-    const onChangeValue = useCallback((value: Value) => {
-        setValue(value);
-    }, []);
-
-    /**
-     * 處理點擊
-     */
-    const handleClick = useCallback((event: MapActionPayload) => {
-        console.log("Clicked Map:", event);
-    }, []);
-
-    /**
-     * 切換工具類型
-     */
-    const setToolType = useCallback((type: Tool) => {
-        setTool(type);
-    }, []);
-
-    /**
-     * 放大
-     */
-    const zoomIn = useCallback((viewerRef: React.RefObject<SVGPanZoom>) => {
-        if (viewerRef.current) {
-            viewerRef.current.zoomOnViewerCenter(1.1);
-        }
-    }, []);
-
-    /**
-     * 縮小
-     */
-    const zoomOut = useCallback((viewerRef: React.RefObject<SVGPanZoom>) => {
-        if (viewerRef.current) {
-            viewerRef.current.zoomOnViewerCenter(0.9);
-        }
-    }, []);
-
-    /**
-     * 重設視圖
-     */
-    const resetView = useCallback((viewerRef: React.RefObject<SVGPanZoom>) => {
-        if (viewerRef.current) {
-            viewerRef.current.reset();
-        }
-    }, []);
-
-    /**
-     * 執行地圖動作
-     */
-    const executeMapAction = useCallback(
-        (action: MapActionTypes, payload?: any) => {
-            switch (action) {
-                case "ZOOM_IN":
-                    if (payload?.viewerRef) zoomIn(payload.viewerRef);
-                    break;
-                case "ZOOM_OUT":
-                    if (payload?.viewerRef) zoomOut(payload.viewerRef);
-                    break;
-                case "RESET_VIEW":
-                    if (payload?.viewerRef) resetView(payload.viewerRef);
-                    break;
-                case "TOGGLE_FULLSCREEN":
-                    toggleFullscreen();
-                    break;
-                case "SET_TOOL":
-                    if (payload?.tool) setToolType(payload.tool);
-                    break;
-            }
-        },
-        [zoomIn, zoomOut, resetView, toggleFullscreen, setToolType]
-    );
-
+    const mapControl = useProvideMapControl();
     return (
-        <MapControlContext.Provider
-            value={{
-                tool,
-                setTool,
-                value,
-                onChangeValue,
-                zoomIn,
-                zoomOut,
-                resetView,
-                handleClick,
-            }}
-        >
+        <MapControlContext.Provider value={mapControl}>
             {children}
         </MapControlContext.Provider>
     );
 };
 
-export const useMapControl = (): MapActionHandlers => {
-    const [tool, setTool] = useState<Tool>("pan");
-    const [value, setValue] = useState<Value>({} as Value);
-    const [isFullscreen, setIsFullscreen] = useState(false);
-    const [viewerState, setViewerState] = useState({
-        viewerWidth: window.innerWidth > 1600 ? 1600 : window.innerWidth - 40,
-        viewerHeight: window.innerHeight > 800 ? 800 : window.innerHeight - 100,
-    });
-
-    // 處理視窗調整事件
-    useEffect(() => {
-        const updateDimensions = () => {
-            const width = window.innerWidth;
-            const height = window.innerHeight;
-
-            // 全屏模式
-            if (isFullscreen) {
-                setViewerState({
-                    viewerWidth: width,
-                    viewerHeight: height,
-                });
-            } else {
-                // 一般模式，保持較大視圖限制
-                setViewerState({
-                    viewerWidth: width > 1600 ? 1600 : width - 40,
-                    viewerHeight: height > 800 ? 800 : height - 100,
-                });
-            }
-        };
-
-        // 初始設定
-        updateDimensions();
-
-        // 監聽調整大小事件
-        window.addEventListener("resize", updateDimensions);
-
-        return () => {
-            window.removeEventListener("resize", updateDimensions);
-        };
-    }, [isFullscreen]);
-
-    /**
-     * 切換全屏模式
-     */
-    const toggleFullscreen = useCallback(() => {
-        setIsFullscreen((prev) => !prev);
-    }, []);
-
-    /**
-     * 處理值變化
-     */
-    const onChangeValue = useCallback((value: Value) => {
-        setValue(value);
-    }, []);
-
-    /**
-     * 處理點擊
-     */
-    const handleClick = useCallback((event: MapActionPayload) => {
-        console.log("Clicked Map:", event);
-    }, []);
-
-    /**
-     * 切換工具類型
-     */
-    const setToolType = useCallback((type: Tool) => {
-        setTool(type);
-    }, []);
-
-    /**
-     * 放大
-     */
-    const zoomIn = useCallback((viewerRef: React.RefObject<SVGPanZoom>) => {
-        if (viewerRef.current) {
-            viewerRef.current.zoomOnViewerCenter(1.1);
-        }
-    }, []);
-
-    /**
-     * 縮小
-     */
-    const zoomOut = useCallback((viewerRef: React.RefObject<SVGPanZoom>) => {
-        if (viewerRef.current) {
-            viewerRef.current.zoomOnViewerCenter(0.9);
-        }
-    }, []);
-
-    /**
-     * 重設視圖
-     */
-    const resetView = useCallback((viewerRef: React.RefObject<SVGPanZoom>) => {
-        if (viewerRef.current) {
-            viewerRef.current.reset();
-        }
-    }, []);
-
-    /**
-     * 執行地圖動作
-     */
-    const executeMapAction = useCallback(
-        (action: MapActionTypes, payload?: any) => {
-            switch (action) {
-                case "ZOOM_IN":
-                    if (payload?.viewerRef) zoomIn(payload.viewerRef);
-                    break;
-                case "ZOOM_OUT":
-                    if (payload?.viewerRef) zoomOut(payload.viewerRef);
-                    break;
-                case "RESET_VIEW":
-                    if (payload?.viewerRef) resetView(payload.viewerRef);
-                    break;
-                case "TOGGLE_FULLSCREEN":
-                    toggleFullscreen();
-                    break;
-                case "SET_TOOL":
-                    if (payload?.tool) setToolType(payload.tool);
-                    break;
-            }
-        },
-        [zoomIn, zoomOut, resetView, toggleFullscreen, setToolType]
-    );
-
-    return {
-        tool,
-        value,
-        viewerWidth: viewerState.viewerWidth,
-        viewerHeight: viewerState.viewerHeight,
-        isFullscreen,
-        onChangeValue,
-        handleClick,
-        zoomIn,
-        zoomOut,
-        resetView,
-        toggleFullscreen,
-        setToolType,
-        executeMapAction,
-    };
+export const useMapControl = (): MapControlContextType => {
+    const context = useContext(MapControlContext);
+    if (context === undefined) {
+        throw new Error("useMapControl 必須在 MapControlProvider 內使用");
+    }
+    return context;
 };

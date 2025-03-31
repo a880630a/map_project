@@ -16,7 +16,7 @@ export type MapActionTypes =
  * 地圖動作載荷
  */
 export interface MapActionPayload {
-    viewerRef?: React.RefObject<SVGPanZoom>;
+    viewerRef?: React.RefObject<any>;
     tool?: Tool;
     [key: string]: any;
 }
@@ -27,18 +27,32 @@ export interface MapActionPayload {
 export interface MapActionHandlers {
     tool: Tool;
     value: Value;
-    viewerWidth: number;
-    viewerHeight: number;
     isFullscreen: boolean;
     onChangeValue: (value: Value) => void;
     handleClick: (event: any) => void;
-    zoomIn: (viewerRef: React.RefObject<SVGPanZoom>) => void;
-    zoomOut: (viewerRef: React.RefObject<SVGPanZoom>) => void;
-    resetView: (viewerRef: React.RefObject<SVGPanZoom>) => void;
-    toggleFullscreen: () => void;
-    setToolType: (type: Tool) => void;
     executeMapAction: (
         action: MapActionTypes,
         payload?: MapActionPayload
     ) => void;
+}
+
+export interface PathInfo {
+    id: string;
+    name: string;
+    description: string;
+    distance: string;
+    time: string;
+    type: "default" | "custom";
+    svgPath: string; // SVG 路徑數據
+    color?: string; // 路徑顏色
+    favorite?: boolean; // 是否收藏
+}
+
+export interface Point {
+    x: number;
+    y: number;
+}
+
+export interface MapActionHandlers {
+    executeMapAction: (action: string) => void;
 }

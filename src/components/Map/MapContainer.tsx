@@ -1,133 +1,175 @@
-import { useRef, useEffect, useState } from "react";
-import { ReactSVGPanZoom } from "react-svg-pan-zoom";
-import { useMapControl } from "../../hooks/useMapControl";
+import React, { useEffect, useRef, useState, useCallback } from "react";
+import {
+    ReactSVGPanZoom,
+    Tool,
+    Value,
+    TOOL_PAN,
+    MODE_IDLE,
+} from "react-svg-pan-zoom";
 import { usePath } from "../../context/PathContext";
+import { useMapControl } from "../../hooks/useMapControl";
 import { SVGPaths } from "./SVGPaths";
+import { PathDrawer } from "./PathDrawer";
 import { MapControls } from "./MapControls";
+import { MapBackground } from "./MapBackground";
 import styles from "../../styles/Map/MapContainer.module.scss";
+import { PathInfo } from "../../types/map";
 
-export const MapContainer = () => {
-    const Viewer = useRef<ReactSVGPanZoom>(null);
+interface Props {
+    width?: number;
+    height?: number;
+}
+
+const initialValue: Value = {
+    version: 2,
+    mode: MODE_IDLE,
+    focus: false,
+    a: 1,
+    b: 0,
+    c: 0,
+    d: 1,
+    e: 0,
+    f: 0,
+    viewerWidth: 0,
+    viewerHeight: 0,
+    SVGWidth: 0,
+    SVGHeight: 0,
+    startX: null,
+    startY: null,
+    endX: null,
+    endY: null,
+    miniatureOpen: true,
+};
+
+export const MapContainer: React.FC<Props> = ({
+    width = 800,
+    height = 600,
+}) => {
+    const mapViewerRef = useRef<ReactSVGPanZoom>(null);
+    const svgRef = useRef<SVGSVGElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
-    const { selectedPath } = usePath();
-    const { tool, value, onChangeValue, handleClick, isFullscreen } =
-        useMapControl();
-    const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+    const [dimensions, setDimensions] = useState({ width, height });
+    const [tool, setTool] = useState<Tool>(TOOL_PAN);
+    const [value, setValue] = useState<Value>(initialValue);
+    const { selectedPath, addPath, isDrawingMode } = usePath();
+    const { zoomIn, zoomOut, resetView } = useMapControl();
 
-    // 計算容器尺寸
-    const updateContainerSize = () => {
-        if (containerRef.current) {
-            const { clientWidth, clientHeight } = containerRef.current;
-            setDimensions({
-                width: clientWidth,
-                height: clientHeight,
-            });
-        }
-    };
+    // 使用 useCallback 包裹 setValue 函數，避免每次渲染都創建新的函數
+    const handleValueChange = useCallback((newValue: Value) => {
+        setValue(newValue);
+    }, []);
 
-    // 視窗大小變化時更新尺寸
+    // 使用 useCallback 包裹 setTool 函數
+    const handleToolChange = useCallback((newTool: Tool) => {
+        setTool(newTool);
+    }, []);
+
     useEffect(() => {
-        updateContainerSize();
+        const handleResize = () => {
+            if (containerRef.current) {
+                const { width, height } =
+                    containerRef.current.getBoundingClientRect();
+                setDimensions({ width, height });
+            }
+        };
 
-        const resizeObserver = new ResizeObserver(() => {
-            updateContainerSize();
-        });
-
-        if (containerRef.current) {
-            resizeObserver.observe(containerRef.current);
-        }
-
-        window.addEventListener("resize", updateContainerSize);
+        window.addEventListener("resize", handleResize);
+        handleResize();
 
         return () => {
-            resizeObserver.disconnect();
-            window.removeEventListener("resize", updateContainerSize);
+            window.removeEventListener("resize", handleResize);
         };
     }, []);
 
-    // 尺寸變化後更新視圖
+    // 減少依賴項，僅在 selectedPath 變更時執行
     useEffect(() => {
-        if (Viewer.current && dimensions.width > 0 && dimensions.height > 0) {
-            Viewer.current.fitToViewer();
-        }
-    }, [dimensions]);
+        if (selectedPath && mapViewerRef.current && svgRef.current) {
+            const pathElement = svgRef.current.querySelector(
+                `path[data-id="${selectedPath}"]`
+            ) as SVGPathElement | null;
+            if (pathElement) {
+                const bbox = pathElement.getBBox();
+                const padding = 50;
 
-    // 當全屏狀態改變時，更新容器樣式
-    const containerClasses = isFullscreen
-        ? `${styles.mapContainer} ${styles.fullscreen}`
-        : styles.mapContainer;
+                // 設置新的視圖狀態
+                mapViewerRef.current.fitSelection(
+                    bbox.x - padding,
+                    bbox.y - padding,
+                    bbox.width + padding * 2,
+                    bbox.height + padding * 2
+                );
+            }
+        }
+    }, [selectedPath]); // 移除 dimensions 依賴
+
+    const handlePathComplete = (path: string) => {
+        const newPath: Omit<PathInfo, "id"> = {
+            name: `路線 ${Date.now()}`,
+            description: "新建路線",
+            distance: "計算中...",
+            time: "計算中...",
+            type: "custom",
+            svgPath: path,
+            color: "#FF0000",
+        };
+        addPath(newPath);
+    };
 
     return (
-        <div className={containerClasses} ref={containerRef}>
-            {dimensions.width > 0 && dimensions.height > 0 && (
-                <ReactSVGPanZoom
-                    ref={Viewer}
+        <div ref={containerRef} className={styles.mapContainer}>
+            <ReactSVGPanZoom
+                ref={mapViewerRef}
+                width={dimensions.width}
+                height={dimensions.height}
+                tool={tool}
+                value={value}
+                onChangeTool={handleToolChange}
+                onChangeValue={handleValueChange}
+                background="transparent"
+                scaleFactorMin={0.5}
+                scaleFactorMax={4}
+                miniatureProps={{
+                    position: "none",
+                    background: "transparent",
+                    width: 100,
+                    height: 80,
+                }}
+                toolbarProps={{ position: "none" }}
+                onZoom={(e) => e.stopPropagation()}
+                onPan={(e) => e.stopPropagation()}
+            >
+                <svg
+                    ref={svgRef}
                     width={dimensions.width}
                     height={dimensions.height}
-                    tool={tool}
-                    onChangeTool={() => {}}
-                    value={value}
-                    onChangeValue={onChangeValue}
-                    onClick={handleClick}
-                    background={
-                        selectedPath ? "rgba(240, 240, 240, 0.9)" : "white"
-                    }
-                    miniatureProps={{
-                        position: "none",
-                        background: "white",
-                        width: 100,
-                        height: 80,
-                    }}
-                    toolbarProps={{ position: "none" }}
-                    detectAutoPan={false}
-                    preventPanOutside={true}
-                    scaleFactorMin={0.5}
-                    scaleFactorMax={5}
+                    viewBox={`0 0 ${dimensions.width} ${dimensions.height}`}
                 >
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
+                    <MapBackground
                         width={dimensions.width}
                         height={dimensions.height}
-                        viewBox="0 0 870 650"
-                        preserveAspectRatio="xMidYMid meet"
-                    >
-                        <defs>
-                            <filter
-                                id="glow"
-                                x="-20%"
-                                y="-20%"
-                                width="140%"
-                                height="140%"
-                            >
-                                <feGaussianBlur
-                                    stdDeviation="5"
-                                    result="blur"
-                                />
-                                <feColorMatrix
-                                    in="blur"
-                                    mode="matrix"
-                                    values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7"
-                                    result="glow"
-                                />
-                                <feComposite
-                                    in="SourceGraphic"
-                                    in2="glow"
-                                    operator="over"
-                                />
-                            </filter>
-                        </defs>
-                        <rect
-                            fill="#ffffff"
-                            width="100%"
-                            height="100%"
-                            x="0"
-                            y="0"
+                    />
+                    <SVGPaths />
+                    {isDrawingMode && (
+                        <PathDrawer
+                            mapViewerRef={
+                                mapViewerRef as React.MutableRefObject<ReactSVGPanZoom>
+                            }
+                            svgRef={
+                                svgRef as React.MutableRefObject<SVGSVGElement>
+                            }
+                            isDrawingMode={isDrawingMode}
+                            onPathComplete={handlePathComplete}
                         />
-                        <SVGPaths />
-                    </svg>
-                </ReactSVGPanZoom>
-            )}
-            <MapControls mapViewerRef={Viewer} />
+                    )}
+                </svg>
+            </ReactSVGPanZoom>
+            <MapControls
+                onZoomIn={zoomIn}
+                onZoomOut={zoomOut}
+                onResetView={resetView}
+            />
         </div>
     );
 };
+
+export default MapContainer;
